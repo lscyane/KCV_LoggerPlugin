@@ -1,0 +1,445 @@
+﻿<UserControl x:Class="KCVLoggerPlugin.Views.SettingView"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+        xmlns:ei="http://schemas.microsoft.com/expression/2010/interactions"
+        xmlns:l="http://schemas.livet-mvvm.net/2011/wpf"
+        xmlns:system="clr-namespace:System;assembly=mscorlib"
+        xmlns:extk="clr-namespace:Xceed.Wpf.Toolkit;assembly=Xceed.Wpf.Toolkit"
+        xmlns:p="clr-namespace:KCVLoggerPlugin.Properties"
+        xmlns:m="clr-namespace:KCVLoggerPlugin.Models"
+        xmlns:v="clr-namespace:KCVLoggerPlugin.Views"
+        xmlns:vm="clr-namespace:KCVLoggerPlugin.ViewModels"
+        Height="435" Width="705" Loaded="UserControl_Loaded">
+
+    <i:Interaction.Triggers>
+
+        <!--Viewに特別な要件が存在しない限りは、トリガーやアクションの自作にこだわらず積極的にコードビハインドを使いましょう -->
+        <!--Viewのコードビハインドは、基本的にView内で完結するロジックとViewModelからのイベントの受信(専用リスナを使用する)に限るとトラブルが少なくなります -->
+        <!--Livet1.1からはコードビハインドでViewModelのイベントを受信するためのWeakEventLisnterサポートが追加されています -->
+
+        <!--WindowのContentRenderedイベントのタイミングでViewModelのInitializeメソッドが呼ばれます-->
+        <i:EventTrigger EventName="ContentRendered">
+            <l:LivetCallMethodAction MethodTarget="{Binding}" MethodName="Initialize"/>
+        </i:EventTrigger>
+
+        <!--Windowが閉じたタイミングでViewModelのDisposeメソッドが呼ばれます-->
+        <i:EventTrigger EventName="Closed">
+            <l:DataContextDisposeAction/>
+        </i:EventTrigger>
+
+        <!--WindowのCloseキャンセル処理に対応する場合は、WindowCloseCancelBehaviorの使用を検討してください-->
+
+        <!-- Import/Export処理の結果通知 -->
+        <l:InteractionMessageTrigger MessageKey="ExchangeResult" Messenger="{Binding Messenger}" >
+            <l:InformationDialogInteractionMessageAction />
+        </l:InteractionMessageTrigger>
+    </i:Interaction.Triggers>
+
+
+    <Grid>
+        <Grid.Resources>
+            <!-- ボタンのスタイル定義 -->
+            <Style x:Key="ButtonStyle" TargetType="Button">
+                <Setter Property="Width" Value="160"/>
+                <Setter Property="Height" Value="24"/>
+                <Setter Property="Margin" Value="0,5,10,5"/>
+                <Setter Property="HorizontalAlignment" Value="Left"/>
+                <Setter Property="VerticalAlignment" Value="Center"/>
+            </Style>
+
+            <!-- エラー時にテキストボックスの右の方に ! を表示するテンプレート -->
+            <ControlTemplate x:Key="ExclamationOnError">
+                <Grid>
+                    <!-- アイコン -->
+                    <Border Background="Red" Width="18" Height="18" CornerRadius="9" HorizontalAlignment="Right"  Margin="0,0,4,0">
+                        <TextBlock TextAlignment="Center" Foreground="White" FontWeight="Bold" VerticalAlignment="Center">！</TextBlock>
+                    </Border>
+                    <!-- 枠線 -->
+                    <AdornedElementPlaceholder x:Name="TextBox">
+                        <Border BorderBrush="Red" BorderThickness="2"/>
+                    </AdornedElementPlaceholder>
+                </Grid>
+            </ControlTemplate>
+
+            <!-- Validation がエラーを返した際にのスタイル -->
+            <Style x:Key="TextBoxHasError" TargetType="{x:Type TextBox}">
+                <Style.Triggers>
+                    <Trigger Property="Validation.HasError" Value="true">
+                        <!-- エラー内容をツールチップを表示する -->
+                        <Setter Property="ToolTip" Value="{Binding RelativeSource={x:Static RelativeSource.Self}, Path=(Validation.Errors)[0].ErrorContent}"/>
+                        <!-- 背景色の変更 -->
+                        <Setter Property="Background" Value="LavenderBlush" />
+                    </Trigger>
+                </Style.Triggers>
+            </Style>
+
+            <!-- 記録間隔の選択肢定義。Intervalは分単位 -->
+            <x:Array x:Key="RecordIntervalData" Type="m:LogInterval">
+                <m:LogInterval Interval="1"     Text="１分"/>
+                <m:LogInterval Interval="60"    Text="１時間"/>
+                <m:LogInterval Interval="360"   Text="６時間"/>
+                <m:LogInterval Interval="720"   Text="12時間"/>
+                <m:LogInterval Interval="1440"  Text="24時間"/>
+            </x:Array>
+        </Grid.Resources>
+        
+        <DockPanel>
+            <GroupBox Header="装備開発記録" DockPanel.Dock="Top">
+                <WrapPanel Margin="10,0,0,0">
+                    <Button Content="バックアップデータのインポート" Style="{StaticResource ButtonStyle}">
+                        <i:Interaction.Triggers>
+                            <i:EventTrigger EventName="Click">
+                                <l:OpenFileDialogInteractionMessageAction>
+                                    <l:DirectInteractionMessage CallbackMethodTarget="{Binding}" CallbackMethodName="OpenCreateItemLog" >
+                                        <l:OpeningFileSelectionMessage Filter="データファイル(*.dat)|*.dat" Title="インポートデータの選択" MultiSelect="False"/>
+                                    </l:DirectInteractionMessage>
+                                </l:OpenFileDialogInteractionMessageAction>
+                            </i:EventTrigger>
+                        </i:Interaction.Triggers>
+                    </Button>
+
+                    <Button Content="バックアップデータのエクスポート" Style="{StaticResource ButtonStyle}">
+                        <i:Interaction.Triggers>
+                            <i:EventTrigger EventName="Click">
+                                <l:SaveFileDialogInteractionMessageAction>
+                                    <l:DirectInteractionMessage CallbackMethodTarget="{Binding}" CallbackMethodName="SaveCreateItemLog" >
+                                        <l:SavingFileSelectionMessage Filter="データファイル(*.dat)|*.dat" Title="名前をつけて保存"/>
+                                    </l:DirectInteractionMessage>
+                                </l:SaveFileDialogInteractionMessageAction>
+                            </i:EventTrigger>
+                        </i:Interaction.Triggers>
+                    </Button>
+
+                    <Button Content="CSV形式をインポート" Style="{StaticResource ButtonStyle}">
+                        <i:Interaction.Triggers>
+                            <i:EventTrigger EventName="Click">
+                                <l:OpenFileDialogInteractionMessageAction>
+                                    <l:DirectInteractionMessage CallbackMethodTarget="{Binding}" CallbackMethodName="OpenCreateItemLog" >
+                                        <l:OpeningFileSelectionMessage Filter="CSVファイル(*.csv)|*.csv" Title="インポートデータの選択" MultiSelect="False"/>
+                                    </l:DirectInteractionMessage>
+                                </l:OpenFileDialogInteractionMessageAction>
+                            </i:EventTrigger>
+                        </i:Interaction.Triggers>
+                    </Button>
+
+                    <Button Content="CSV形式でエクスポート" Style="{StaticResource ButtonStyle}">
+                        <i:Interaction.Triggers>
+                            <i:EventTrigger EventName="Click">
+                                <l:SaveFileDialogInteractionMessageAction>
+                                    <l:DirectInteractionMessage CallbackMethodTarget="{Binding}" CallbackMethodName="SaveCreateItemLog" >
+                                        <l:SavingFileSelectionMessage Filter="CSVファイル(*.csv)|*.csv" Title="名前をつけて保存"/>
+                                    </l:DirectInteractionMessage>
+                                </l:SaveFileDialogInteractionMessageAction>
+                            </i:EventTrigger>
+                        </i:Interaction.Triggers>
+                    </Button>
+                </WrapPanel>
+            </GroupBox>
+
+            <GroupBox Header="造船建造記録" DockPanel.Dock="Top">
+                <WrapPanel Margin="10,0,0,0">
+                    <Button Content="バックアップデータのインポート" Style="{StaticResource ButtonStyle}">
+                        <i:Interaction.Triggers>
+                            <i:EventTrigger EventName="Click">
+                                <l:OpenFileDialogInteractionMessageAction>
+                                    <l:DirectInteractionMessage CallbackMethodTarget="{Binding}" CallbackMethodName="OpenCreateShipLog" >
+                                        <l:OpeningFileSelectionMessage Filter="データファイル(*.dat)|*.dat" Title="インポートデータの選択" MultiSelect="False"/>
+                                    </l:DirectInteractionMessage>
+                                </l:OpenFileDialogInteractionMessageAction>
+                            </i:EventTrigger>
+                        </i:Interaction.Triggers>
+                    </Button>
+
+                    <Button Content="バックアップデータのエクスポート" Style="{StaticResource ButtonStyle}">
+                        <i:Interaction.Triggers>
+                            <i:EventTrigger EventName="Click">
+                                <l:SaveFileDialogInteractionMessageAction>
+                                    <l:DirectInteractionMessage CallbackMethodTarget="{Binding}" CallbackMethodName="SaveCreateShipLog" >
+                                        <l:SavingFileSelectionMessage Filter="データファイル(*.dat)|*.dat" Title="名前をつけて保存"/>
+                                    </l:DirectInteractionMessage>
+                                </l:SaveFileDialogInteractionMessageAction>
+                            </i:EventTrigger>
+                        </i:Interaction.Triggers>
+                    </Button>
+
+                    <Button Content="CSV形式をインポート" Style="{StaticResource ButtonStyle}">
+                        <i:Interaction.Triggers>
+                            <i:EventTrigger EventName="Click">
+                                <l:OpenFileDialogInteractionMessageAction>
+                                    <l:DirectInteractionMessage CallbackMethodTarget="{Binding}" CallbackMethodName="OpenCreateShipLog" >
+                                        <l:OpeningFileSelectionMessage Filter="CSVファイル(*.csv)|*.csv" Title="インポートデータの選択" MultiSelect="False"/>
+                                    </l:DirectInteractionMessage>
+                                </l:OpenFileDialogInteractionMessageAction>
+                            </i:EventTrigger>
+                        </i:Interaction.Triggers>
+                    </Button>
+
+                    <Button Content="CSV形式でエクスポート" Style="{StaticResource ButtonStyle}">
+                        <i:Interaction.Triggers>
+                            <i:EventTrigger EventName="Click">
+                                <l:SaveFileDialogInteractionMessageAction>
+                                    <l:DirectInteractionMessage CallbackMethodTarget="{Binding}" CallbackMethodName="SaveCreateShipLog" >
+                                        <l:SavingFileSelectionMessage Filter="CSVファイル(*.csv)|*.csv" Title="名前をつけて保存"/>
+                                    </l:DirectInteractionMessage>
+                                </l:SaveFileDialogInteractionMessageAction>
+                            </i:EventTrigger>
+                        </i:Interaction.Triggers>
+                    </Button>
+                </WrapPanel>
+            </GroupBox>
+
+            <GroupBox Header="戦闘記録" DockPanel.Dock="Top">
+                <WrapPanel Margin="10,0,0,0">
+                    <Button Content="バックアップデータのインポート" Style="{StaticResource ButtonStyle}">
+                        <i:Interaction.Triggers>
+                            <i:EventTrigger EventName="Click">
+                                <l:OpenFileDialogInteractionMessageAction>
+                                    <l:DirectInteractionMessage CallbackMethodTarget="{Binding}" CallbackMethodName="OpenBattleLog" >
+                                        <l:OpeningFileSelectionMessage Filter="データファイル(*.dat)|*.dat" Title="インポートデータの選択" MultiSelect="False"/>
+                                    </l:DirectInteractionMessage>
+                                </l:OpenFileDialogInteractionMessageAction>
+                            </i:EventTrigger>
+                        </i:Interaction.Triggers>
+                    </Button>
+
+                    <Button Content="バックアップデータのエクスポート" Style="{StaticResource ButtonStyle}">
+                        <i:Interaction.Triggers>
+                            <i:EventTrigger EventName="Click">
+                                <l:SaveFileDialogInteractionMessageAction>
+                                    <l:DirectInteractionMessage CallbackMethodTarget="{Binding}" CallbackMethodName="SaveBattleLog" >
+                                        <l:SavingFileSelectionMessage Filter="データファイル(*.dat)|*.dat" Title="名前をつけて保存"/>
+                                    </l:DirectInteractionMessage>
+                                </l:SaveFileDialogInteractionMessageAction>
+                            </i:EventTrigger>
+                        </i:Interaction.Triggers>
+                    </Button>
+
+                    <Button Content="CSV形式をインポート" Style="{StaticResource ButtonStyle}">
+                        <i:Interaction.Triggers>
+                            <i:EventTrigger EventName="Click">
+                                <l:OpenFileDialogInteractionMessageAction>
+                                    <l:DirectInteractionMessage CallbackMethodTarget="{Binding}" CallbackMethodName="OpenBattleLog" >
+                                        <l:OpeningFileSelectionMessage Filter="CSVファイル(*.csv)|*.csv" Title="インポートデータの選択" MultiSelect="False"/>
+                                    </l:DirectInteractionMessage>
+                                </l:OpenFileDialogInteractionMessageAction>
+                            </i:EventTrigger>
+                        </i:Interaction.Triggers>
+                    </Button>
+
+                    <Button Content="CSV形式でエクスポート" Style="{StaticResource ButtonStyle}">
+                        <i:Interaction.Triggers>
+                            <i:EventTrigger EventName="Click">
+                                <l:SaveFileDialogInteractionMessageAction>
+                                    <l:DirectInteractionMessage CallbackMethodTarget="{Binding}" CallbackMethodName="SaveBattleLog" >
+                                        <l:SavingFileSelectionMessage Filter="CSVファイル(*.csv)|*.csv" Title="名前をつけて保存"/>
+                                    </l:DirectInteractionMessage>
+                                </l:SaveFileDialogInteractionMessageAction>
+                            </i:EventTrigger>
+                        </i:Interaction.Triggers>
+                    </Button>
+                </WrapPanel>
+            </GroupBox>
+
+            <GroupBox Header="遠征記録" DockPanel.Dock="Top">
+                <WrapPanel Margin="10,0,0,0">
+                    <Button Content="バックアップデータのインポート" Style="{StaticResource ButtonStyle}">
+                        <i:Interaction.Triggers>
+                            <i:EventTrigger EventName="Click">
+                                <l:OpenFileDialogInteractionMessageAction>
+                                    <l:DirectInteractionMessage CallbackMethodTarget="{Binding}" CallbackMethodName="OpenMissionLog" >
+                                        <l:OpeningFileSelectionMessage Filter="データファイル(*.dat)|*.dat" Title="インポートデータの選択" MultiSelect="False"/>
+                                    </l:DirectInteractionMessage>
+                                </l:OpenFileDialogInteractionMessageAction>
+                            </i:EventTrigger>
+                        </i:Interaction.Triggers>
+                    </Button>
+
+                    <Button Content="バックアップデータのエクスポート" Style="{StaticResource ButtonStyle}">
+                        <i:Interaction.Triggers>
+                            <i:EventTrigger EventName="Click">
+                                <l:SaveFileDialogInteractionMessageAction>
+                                    <l:DirectInteractionMessage CallbackMethodTarget="{Binding}" CallbackMethodName="SaveMissionLog" >
+                                        <l:SavingFileSelectionMessage Filter="データファイル(*.dat)|*.dat" Title="名前をつけて保存"/>
+                                    </l:DirectInteractionMessage>
+                                </l:SaveFileDialogInteractionMessageAction>
+                            </i:EventTrigger>
+                        </i:Interaction.Triggers>
+                    </Button>
+
+                    <Button Content="CSV形式をインポート" Style="{StaticResource ButtonStyle}">
+                        <i:Interaction.Triggers>
+                            <i:EventTrigger EventName="Click">
+                                <l:OpenFileDialogInteractionMessageAction>
+                                    <l:DirectInteractionMessage CallbackMethodTarget="{Binding}" CallbackMethodName="OpenMissionLog" >
+                                        <l:OpeningFileSelectionMessage Filter="CSVファイル(*.csv)|*.csv" Title="インポートデータの選択" MultiSelect="False"/>
+                                    </l:DirectInteractionMessage>
+                                </l:OpenFileDialogInteractionMessageAction>
+                            </i:EventTrigger>
+                        </i:Interaction.Triggers>
+                    </Button>
+
+                    <Button Content="CSV形式でエクスポート" Style="{StaticResource ButtonStyle}">
+                        <i:Interaction.Triggers>
+                            <i:EventTrigger EventName="Click">
+                                <l:SaveFileDialogInteractionMessageAction>
+                                    <l:DirectInteractionMessage CallbackMethodTarget="{Binding}" CallbackMethodName="SaveMissionLog" >
+                                        <l:SavingFileSelectionMessage Filter="CSVファイル(*.csv)|*.csv" Title="名前をつけて保存"/>
+                                    </l:DirectInteractionMessage>
+                                </l:SaveFileDialogInteractionMessageAction>
+                            </i:EventTrigger>
+                        </i:Interaction.Triggers>
+                    </Button>
+                </WrapPanel>
+            </GroupBox>
+
+            <GroupBox Header="資源記録" DockPanel.Dock="Top">
+                <WrapPanel Margin="10,0,0,0">
+                    <Button Content="バックアップデータのインポート" Style="{StaticResource ButtonStyle}">
+                        <i:Interaction.Triggers>
+                            <i:EventTrigger EventName="Click">
+                                <l:OpenFileDialogInteractionMessageAction>
+                                    <l:DirectInteractionMessage CallbackMethodTarget="{Binding}" CallbackMethodName="OpenMaterialLog" >
+                                        <l:OpeningFileSelectionMessage Filter="データファイル(*.dat)|*.dat" Title="資源記録のインポート" MultiSelect="False"/>
+                                    </l:DirectInteractionMessage>
+                                </l:OpenFileDialogInteractionMessageAction>
+                            </i:EventTrigger>
+                        </i:Interaction.Triggers>
+                    </Button>
+
+                    <Button Content="バックアップデータのエクスポート" Style="{StaticResource ButtonStyle}">
+                        <i:Interaction.Triggers>
+                            <i:EventTrigger EventName="Click">
+                                <l:SaveFileDialogInteractionMessageAction>
+                                    <l:DirectInteractionMessage CallbackMethodTarget="{Binding}" CallbackMethodName="SaveMaterialLog" >
+                                        <l:SavingFileSelectionMessage Filter="データファイル(*.dat)|*.dat" Title="資源記録のエクスポート"/>
+                                    </l:DirectInteractionMessage>
+                                </l:SaveFileDialogInteractionMessageAction>
+                            </i:EventTrigger>
+                        </i:Interaction.Triggers>
+                    </Button>
+
+                    <Button Content="CSV形式をインポート" Style="{StaticResource ButtonStyle}">
+                        <i:Interaction.Triggers>
+                            <i:EventTrigger EventName="Click">
+                                <l:OpenFileDialogInteractionMessageAction>
+                                    <l:DirectInteractionMessage CallbackMethodTarget="{Binding}" CallbackMethodName="OpenMaterialLog" >
+                                        <l:OpeningFileSelectionMessage Filter="CSVファイル(*.csv)|*.csv" Title="資源記録のインポート" MultiSelect="False"/>
+                                    </l:DirectInteractionMessage>
+                                </l:OpenFileDialogInteractionMessageAction>
+                            </i:EventTrigger>
+                        </i:Interaction.Triggers>
+                    </Button>
+
+                    <Button Content="CSV形式でエクスポート" Style="{StaticResource ButtonStyle}">
+                        <i:Interaction.Triggers>
+                            <i:EventTrigger EventName="Click">
+                                <l:SaveFileDialogInteractionMessageAction>
+                                    <l:DirectInteractionMessage CallbackMethodTarget="{Binding}" CallbackMethodName="SaveMaterialLog" >
+                                        <l:SavingFileSelectionMessage Filter="CSVファイル(*.csv)|*.csv" Title="資源記録のエクスポート"/>
+                                    </l:DirectInteractionMessage>
+                                </l:SaveFileDialogInteractionMessageAction>
+                            </i:EventTrigger>
+                        </i:Interaction.Triggers>
+                    </Button>
+                    <Label Margin="0,0,5,0" Foreground="White">記録間隔</Label>
+                    <ComboBox ItemsSource="{StaticResource RecordIntervalData}" 
+                              SelectedValuePath="Interval" 
+                              DisplayMemberPath="Text" 
+                              SelectedValue="{Binding Source={x:Static p:Settings.Default}, Path=MaterialLogInterval, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                              />
+                </WrapPanel>
+            </GroupBox>
+
+            <GroupBox Header="戦果記録" DockPanel.Dock="Top">
+                <WrapPanel Margin="10,0,0,0">
+                    <Button Content="バックアップデータのインポート" Style="{StaticResource ButtonStyle}">
+                        <i:Interaction.Triggers>
+                            <i:EventTrigger EventName="Click">
+                                <l:OpenFileDialogInteractionMessageAction>
+                                    <l:DirectInteractionMessage CallbackMethodTarget="{Binding}" CallbackMethodName="OpenAachievementLog" >
+                                        <l:OpeningFileSelectionMessage Filter="データファイル(*.dat)|*.dat" Title="資源記録のインポート" MultiSelect="False"/>
+                                    </l:DirectInteractionMessage>
+                                </l:OpenFileDialogInteractionMessageAction>
+                            </i:EventTrigger>
+                        </i:Interaction.Triggers>
+                    </Button>
+
+                    <Button Content="バックアップデータのエクスポート" Style="{StaticResource ButtonStyle}">
+                        <i:Interaction.Triggers>
+                            <i:EventTrigger EventName="Click">
+                                <l:SaveFileDialogInteractionMessageAction>
+                                    <l:DirectInteractionMessage CallbackMethodTarget="{Binding}" CallbackMethodName="SaveAachievementLog" >
+                                        <l:SavingFileSelectionMessage Filter="データファイル(*.dat)|*.dat" Title="資源記録のエクスポート"/>
+                                    </l:DirectInteractionMessage>
+                                </l:SaveFileDialogInteractionMessageAction>
+                            </i:EventTrigger>
+                        </i:Interaction.Triggers>
+                    </Button>
+
+                    <Button Content="CSV形式をインポート" Style="{StaticResource ButtonStyle}">
+                        <i:Interaction.Triggers>
+                            <i:EventTrigger EventName="Click">
+                                <l:OpenFileDialogInteractionMessageAction>
+                                    <l:DirectInteractionMessage CallbackMethodTarget="{Binding}" CallbackMethodName="OpenAachievementLog" >
+                                        <l:OpeningFileSelectionMessage Filter="CSVファイル(*.csv)|*.csv" Title="資源記録のインポート" MultiSelect="False"/>
+                                    </l:DirectInteractionMessage>
+                                </l:OpenFileDialogInteractionMessageAction>
+                            </i:EventTrigger>
+                        </i:Interaction.Triggers>
+                    </Button>
+
+                    <Button Content="CSV形式でエクスポート" Style="{StaticResource ButtonStyle}">
+                        <i:Interaction.Triggers>
+                            <i:EventTrigger EventName="Click">
+                                <l:SaveFileDialogInteractionMessageAction>
+                                    <l:DirectInteractionMessage CallbackMethodTarget="{Binding}" CallbackMethodName="SaveAachievementLog" >
+                                        <l:SavingFileSelectionMessage Filter="CSVファイル(*.csv)|*.csv" Title="資源記録のエクスポート"/>
+                                    </l:DirectInteractionMessage>
+                                </l:SaveFileDialogInteractionMessageAction>
+                            </i:EventTrigger>
+                        </i:Interaction.Triggers>
+                    </Button>
+                    <Label Margin="0,0,5,0" Foreground="White">記録間隔</Label>
+                    <ComboBox ItemsSource="{StaticResource RecordIntervalData}" 
+                              SelectedValuePath="Interval" 
+                              DisplayMemberPath="Text" 
+                              SelectedValue="{Binding Source={x:Static p:Settings.Default}, Path=MaterialLogInterval, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                              />
+                </WrapPanel>
+            </GroupBox>
+
+            <Grid Margin="8,8,8,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <Label Grid.Column="0" Grid.Row="0" Foreground="White">ログの保存先：</Label>
+                <!--
+                <extk:WatermarkTextBox Grid.Column="1" Grid.Row="0" DockPanel.Dock="Top"
+                                   Watermark="省略時はLocalApplicationDataに保存します"
+                                   Text="{Binding Source={x:Static p:Settings.Default}, Path=SaveLogPath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True}">
+                </extk:WatermarkTextBox>
+                -->
+                <extk:WatermarkTextBox Grid.Column="1" Grid.Row="0" DockPanel.Dock="Top" Name="wmTextBox"
+                                       Watermark="省略時はLocalApplicationDataに保存します"  
+                                       Validation.ErrorTemplate="{StaticResource ExclamationOnError}"
+                                       Style="{StaticResource TextBoxHasError}">
+                    <extk:WatermarkTextBox.Text>
+                        <Binding Source="{x:Static p:Settings.Default}" Path="SaveLogPath" Mode="TwoWay" UpdateSourceTrigger="PropertyChanged">
+                            <Binding.ValidationRules>
+                                <v:MyValidationRule />      <!-- 自作のバリデーションルール -->
+                                <ExceptionValidationRule /> <!-- 何か例外でたらエラーにしてくれるルール -->
+                            </Binding.ValidationRules>
+                        </Binding>
+                    </extk:WatermarkTextBox.Text>
+                </extk:WatermarkTextBox>
+            </Grid>
+
+        </DockPanel>
+    </Grid>
+
+</UserControl>
