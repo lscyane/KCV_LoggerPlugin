@@ -61,12 +61,17 @@ namespace KCVLoggerPlugin.Models
             if ((logInstance.History.Count == 0)
              || (logInstance.History.Last().AdmiralExp != result.Experience)
             ) {
-                AachievementLogStruct cils = new AachievementLogStruct(
-                    DateTime.Now,                                    // 日時
-                    result.Experience                                // 提督経験値
-                );
-                logInstance.HistoryAdd(cils);
-            }
+				// ページ再読込時あたりのタイミングで0を取得することがあるので弾く
+				if (result.Experience != 0)
+				{
+					AachievementLogStruct cils = new AachievementLogStruct(
+						DateTime.Now,                                    // 日時
+						result.Experience                                // 提督経験値
+					);
+					logInstance.HistoryAdd(cils);
+
+				}
+			}
         }
     }
 }
