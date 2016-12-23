@@ -5,16 +5,19 @@
 
 
 ### 導入方法
-以下のファイルを KanColleViewer の `Plugins` ディレクトリに配置。
-* `LoggerPlugin.dll`
-* `protobuf-net.dll`
-* `Xceed.Wpf.Toolkit.dll`
+* 以下のファイルを KanColleViewer の `Plugins` ディレクトリに配置。
+    * `LoggerPlugin.dll`
+    * `protobuf-net.dll`
+    * `Xceed.Wpf.Toolkit.dll`
+
+* dllの「ブロックの解除」がされていないと正しく動作しません。
+    * [https://twitter.com/Grabacr07/status/497403215730589696](https://twitter.com/Grabacr07/status/497403215730589696)
 
 
 
 ### 使用時の注意
-ログ保存先の変更、ログファイルのインポートを行う時は必ず事前にバックアップをとっておいてください！
-
+* ログ保存先の変更、ログファイルのインポートを行う時は必ず事前にバックアップをとっておいてください！
+* 何が起きても気にしない人だけが使ってください。
 
 
 ### ライセンス
@@ -93,7 +96,4 @@
 
 ### LATEST BUILD
 * comming soon...
-* dllの「ブロックの解除」がされていないと正しく動作しません。
-    * [https://twitter.com/Grabacr07/status/497403215730589696](https://twitter.com/Grabacr07/status/497403215730589696)
-* 何が起きても気にしない人だけが使ってください。
-    * バグを踏むと、誤った結果表示になったり戦闘時にアプリがクラッシュしたりする可能性があります。
+
