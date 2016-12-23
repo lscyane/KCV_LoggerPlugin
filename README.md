@@ -95,4 +95,4 @@
 
 
 ### LATEST BUILD 
-[![Build status](https://ci.appveyor.com/api/projects/status/5wl22vm5bu4edcwv/branch/master?svg=true)](https://ci.appveyor.com/project/lscyane/kcv-loggerplugin/branch/master) [LoggerPlugin - AppVeyor](https://ci.appveyor.com/project/lscyane/kcv-loggerplugin/branch/master)
+[![Build status](https://ci.appveyor.com/api/projects/status/5wl22vm5bu4edcwv/branch/master?svg=true)](https://ci.appveyor.com/project/lscyane/kcv-loggerplugin/branch/master/artifacts) [LoggerPlugin - AppVeyor](https://ci.appveyor.com/project/lscyane/kcv-loggerplugin/branch/master/artifacts)
