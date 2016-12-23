@@ -275,13 +275,12 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>copy "$(TargetDir)$(TargetFileName)" "$(SolutionDir)KanColleViewer ver.4.2\Plugins"
-copy "$(TargetDir)protobuf-net.dll" "$(SolutionDir)KanColleViewer ver.4.2\Plugins"
-copy "$(TargetDir)Xceed.Wpf.Toolkit.dll" "$(SolutionDir)KanColleViewer ver.4.2\Plugins"
-
-copy "$(TargetDir)$(TargetFileName)" "\\192.168.1.2\public\plugin"
-copy "$(TargetDir)protobuf-net.dll" "\\192.168.1.2\public\plugin"
-copy "$(TargetDir)Xceed.Wpf.Toolkit.dll" "\\192.168.1.2\public\plugin"</PostBuildEvent>
+    <PostBuildEvent>
+    </PostBuildEvent>
+  </PropertyGroup>
+  <PropertyGroup>
+    <PreBuildEvent>
+    </PreBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
