@@ -13,6 +13,11 @@
     </UserControl.DataContext>
     -->
 
+    <UserControl.Resources>
+        <!--結果表示用 Converter-->
+        <v:MissionResultConverter x:Key="MissionResultConverter"/>
+    </UserControl.Resources>
+
     <i:Interaction.Triggers>
         <!--Viewに特別な要件が存在しない限りは、トリガーやアクションの自作にこだわらず積極的にコードビハインドを使いましょう -->
         <!--Viewのコードビハインドは、基本的にView内で完結するロジックとViewModelからのイベントの受信(専用リスナを使用する)に限るとトラブルが少なくなります -->
@@ -27,12 +32,12 @@
                     <GridViewColumn DisplayMemberBinding="{Binding Path=Area}" Header="海域" Width="60"/>
                     <GridViewColumn DisplayMemberBinding="{Binding Path=MissionName}" Header="遠征名" Width="50"/>
                     <GridViewColumn DisplayMemberBinding="{Binding Path=Fleet}" Header="艦隊" Width="40"/>
-                    <GridViewColumn DisplayMemberBinding="{Binding Path=Result}" Header="結果" Width="40"/>
+                    <GridViewColumn DisplayMemberBinding="{Binding Path=Result, Converter={StaticResource MissionResultConverter}}" Header="結果" Width="30"/>
                     <GridViewColumn DisplayMemberBinding="{Binding Path=Fuel}" Header="燃料" Width="40"/>
                     <GridViewColumn DisplayMemberBinding="{Binding Path=Ammunition}" Header="弾薬" Width="40"/>
                     <GridViewColumn DisplayMemberBinding="{Binding Path=Steel}" Header="鋼材" Width="40"/>
                     <GridViewColumn DisplayMemberBinding="{Binding Path=Bauxite}" Header="ボーキサイト" Width="40"/>
-                    <GridViewColumn DisplayMemberBinding="{Binding Path=Item}" Header="獲得アイテム" Width="40"/>
+                    <GridViewColumn DisplayMemberBinding="{Binding Path=Item}" Header="獲得アイテム" Width="100"/>
                 </GridView>
             </ListView.View>
         </ListView>

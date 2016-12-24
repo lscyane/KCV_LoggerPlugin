@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Windows;
@@ -32,4 +33,32 @@ namespace KCVLoggerPlugin.Views
             InitializeComponent();
         }
     }
+
+
+	/// <summary>
+	/// 結果用コンバータ。数値を文字列に変換します。
+	/// </summary>
+	[ValueConversion(typeof(int), typeof(string))]
+	public class MissionResultConverter : IValueConverter
+	{
+
+		object IValueConverter.Convert(object value, Type targetType, object parameter, CultureInfo culture)
+		{
+			int val = System.Convert.ToInt32(value);
+			switch (val)
+			{
+				case 0: return "×";
+				case 1: return "◯";
+				case 2: return "◎";
+				default: return val.ToString();
+			}
+		}
+
+
+		object IValueConverter.ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+		{
+			// 編集できないので逆はサポートしない
+			throw new NotImplementedException();
+		}
+	}
 }
