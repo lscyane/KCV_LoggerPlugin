@@ -412,12 +412,6 @@
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
                 <Label Grid.Column="0" Grid.Row="0" Foreground="White">ログの保存先：</Label>
-                <!--
-                <extk:WatermarkTextBox Grid.Column="1" Grid.Row="0" DockPanel.Dock="Top"
-                                   Watermark="省略時はLocalApplicationDataに保存します"
-                                   Text="{Binding Source={x:Static p:Settings.Default}, Path=SaveLogPath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True}">
-                </extk:WatermarkTextBox>
-                -->
                 <extk:WatermarkTextBox Grid.Column="1" Grid.Row="0" DockPanel.Dock="Top" Name="wmTextBox"
                                        Watermark="省略時はLocalApplicationDataに保存します"  
                                        Validation.ErrorTemplate="{StaticResource ExclamationOnError}"
