@@ -32,4 +32,25 @@ namespace KCVLoggerPlugin.Views
             InitializeComponent();
         }
     }
+
+
+
+	/// <summary>
+	/// 経験値増分表示用コンバータ。数値を文字列に変換します。
+	/// </summary>
+	public class IncrementalExpConverter : IMultiValueConverter
+	{
+		public object Convert(object[] values, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+		{
+			int exp = (int)values[0];
+			int inc = (int)values[1];
+			return String.Format("{0} ({1})", exp, inc.ToString("+#;-#;#"));
+		}
+
+		public object[] ConvertBack(object value, Type[] targetTypes, object parameter, System.Globalization.CultureInfo culture)
+		{
+			// 編集できないので逆はサポートしない
+			throw new NotImplementedException();
+		}
+	}
 }

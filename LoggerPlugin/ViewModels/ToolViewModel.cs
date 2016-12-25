@@ -350,6 +350,11 @@ namespace KCVLoggerPlugin.ViewModels
 		{
 			// 新しいデータを上部にするため反転して返す
 			this.AachievementLogList = new ObservableCollection<AachievementLogStruct>(AachievementLog.Instance.History.Reverse());
+			// 表示用値の計算
+			for (int i=0; i < this.AachievementLogList.Count-1; ++i)
+			{
+				this.AachievementLogList[i].Incremental = this.AachievementLogList[i].AdmiralExp - this.AachievementLogList[i+1].AdmiralExp;
+			}
 		}
 
 

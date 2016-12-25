@@ -10,10 +10,10 @@ namespace KCVLoggerPlugin.Models
     [ProtoContract]
     public class AachievementLogStruct : IEquatable<AachievementLogStruct>
     {
-        /// <summary>
-        /// 時刻
-        /// </summary>
-        [ProtoMember(1)]
+		/// <summary>
+		/// 時刻
+		/// </summary>
+		[ProtoMember(1)]
         public DateTime DateTime { get; private set; }
 
         /// <summary>
@@ -27,6 +27,13 @@ namespace KCVLoggerPlugin.Models
         /// </summary>
         [ProtoMember(3)]
         public bool CsvFlag { get; private set; }
+
+
+		/// <summary>
+		/// 経験値増分(計算表示用でProtoMemberには含めない)
+		/// </summary>
+		public int Incremental { get; set; }
+
 
 		/// <summary>
 		/// コンストラクタ
