@@ -21,7 +21,7 @@
 
 
 ### ライセンス
-* [The MIT License (MIT)](LICENSE)
+* [The MIT License (MIT)](LICENSE.txt)
 
 
 
