@@ -15,8 +15,8 @@ namespace KCVLoggerPlugin
     [Export(typeof(IPlugin))]       // ExportMetadataは設定→プラグインタブに表示される情報
     [ExportMetadata("Guid", "7FAADD01-7818-42F4-BC3B-005BEF6FAC3C")]
     [ExportMetadata("Title", "KCVLogger")]
-    [ExportMetadata("Description", "各種記録を表示します。")]
-    [ExportMetadata("Version", "1.0.0")]
+    [ExportMetadata("Description", "各種記録を保存・表示します。")]
+    [ExportMetadata("Version", "1.0")]
     [ExportMetadata("Author", "@lscyane")]
     [Export(typeof(ITool))]
     [Export(typeof(ISettings))]
@@ -45,6 +45,7 @@ namespace KCVLoggerPlugin
 				// このクラスの何らかのメンバーにアクセスされたら読み込み。
 				// 読み込みに失敗したら例外が投げられてプラグインだけが死ぬ（はず）
 				System.Reflection.Assembly.LoadFrom("protobuf-net.dll");
+				System.Reflection.Assembly.LoadFrom("Xceed.Wpf.Toolkit.dll");
 			}
 			catch (Exception ex)
 			{
@@ -74,11 +75,11 @@ namespace KCVLoggerPlugin
 			this.tool_VM.Initialize();
             this.setting_VM.Initialize();
 			
-			// アプリケーションの終了時に設定ファイルの保存を行う
+			// アプリケーションの終了時に保存を行う
 			Disposable.Create(() =>
 			{
-				Properties.Settings.Default.Save();
-				this.tool_VM.Dispose();
+				Properties.Settings.Default.Save();	// 設定
+				this.tool_VM.Dispose();				// 各種ログ
 			}).AddTo(this);
 		}
 
