@@ -7,6 +7,8 @@
 ### 導入方法
 * 以下のファイルを KanColleViewer の `Plugins` ディレクトリに配置。
     * `LoggerPlugin.dll`
+
+* 以下のファイルを 'KanColleViewer.exe' 同じ階層に配置。
     * `protobuf-net.dll`
     * `Xceed.Wpf.Toolkit.dll`
 
@@ -35,6 +37,7 @@
 * **備考 :** KanColleWrapper　の依存ライブラリ
 
 #### [Livet](http://ugaya40.hateblo.jp/entry/Livet)
+> 
 * **ライセンス :** zlib/libpng
 
 #### [KanColleViewer](https://github.com/Grabacr07/KanColleViewer)
@@ -52,14 +55,17 @@
 * **備考 :** MetroTrilithon　の依存ライブラリ
 
 #### [CsvHelper](https://github.com/JoshClose/CsvHelper)
+> 
 * **ライセンス :** MS-PL and Apache 2.0
 * **ライセンス全文 :** [license/CsvHelper.txt](license/CsvHelper.txt)
 
 #### [Extended WPF Toolkit™ Community Edition](http://wpftoolkit.codeplex.com/)
+> 
 * **ライセンス :** MS-PL
 * **ライセンス全文 :** [license/Ms-PL.txt](license/Ms-PL.txt)
 
 #### [log4net](https://logging.apache.org/log4net/)
+> 
 * **ライセンス :** Apache License Version 2.0
 * **ライセンス全文 :** [license/Apache.txt](license/Apache.txt)
 * **備考 :** Nekoxy の依存ライブラリ
@@ -89,6 +95,7 @@
 * **ライセンス全文 :** [license/protobuf-net.txt](license/protobuf-net.txt)
 
 #### [Rx (Reactive Extensions)](https://rx.codeplex.com/)
+> 
 * **ライセンス :** Apache License Version 2.0
 * **ライセンス全文 :** [license/Apache.txt](license/Apache.txt)
 
