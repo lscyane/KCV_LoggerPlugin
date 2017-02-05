@@ -21,6 +21,18 @@
 
         <!--制空権用 Converter-->
         <v:AirSuperityTypeConverter x:Key="AirSuperityTypeConverter"/>
+        
+        <!-- ListViewItemのStyle -->
+        <Style x:Key="myContainerStyle" TargetType="ListBoxItem">
+            <Style.Triggers>
+                <Trigger Property="IsSelected" Value="True">
+                    <Setter Property="Background" Value="Transparent"/>
+                </Trigger>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="Transparent"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
     </UserControl.Resources>
 
     <i:Interaction.Triggers>
@@ -30,7 +42,7 @@
     </i:Interaction.Triggers>
 
     <Grid>
-        <ListView ItemsSource="{Binding Path=BattleLogList}" HorizontalAlignment="Stretch" Height="Auto">
+        <ListView ItemsSource="{Binding Path=BattleLogList}" HorizontalAlignment="Stretch" Height="Auto" ItemContainerStyle="{StaticResource myContainerStyle}">
             <ListView.View>
                 <GridView>
                     <GridViewColumn DisplayMemberBinding="{Binding Path=DateTime, ConverterCulture=ja-JP}" Header="日時" Width="140"/>

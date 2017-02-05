@@ -14,6 +14,20 @@
     </UserControl.DataContext>
     -->
 
+    <UserControl.Resources>
+        <!-- ListViewItemのStyle -->
+        <Style x:Key="myContainerStyle" TargetType="ListBoxItem">
+            <Style.Triggers>
+                <Trigger Property="IsSelected" Value="True">
+                    <Setter Property="Background" Value="Transparent"/>
+                </Trigger>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="Transparent"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </UserControl.Resources>
+
     <i:Interaction.Triggers>
         <!--Viewに特別な要件が存在しない限りは、トリガーやアクションの自作にこだわらず積極的にコードビハインドを使いましょう -->
         <!--Viewのコードビハインドは、基本的にView内で完結するロジックとViewModelからのイベントの受信(専用リスナを使用する)に限るとトラブルが少なくなります -->
@@ -21,7 +35,7 @@
     </i:Interaction.Triggers>
 
     <Grid>
-        <ListView ItemsSource="{Binding Path=MaterialLogList}" HorizontalAlignment="Stretch" Height="Auto">
+        <ListView ItemsSource="{Binding Path=MaterialLogList}" HorizontalAlignment="Stretch" Height="Auto" ItemContainerStyle="{StaticResource myContainerStyle}">
             <ListView.View>
                 <GridView>
                     <GridViewColumn DisplayMemberBinding="{Binding Path=DateTime, ConverterCulture=ja-JP}" Header="燃料" Width="120"/>

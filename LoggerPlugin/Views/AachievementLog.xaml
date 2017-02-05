@@ -16,6 +16,18 @@
     <UserControl.Resources>
         <!--経験値増分表示用 Converter-->
         <v:IncrementalExpConverter x:Key="IncrementalExpConverter"/>
+        
+        <!-- ListViewItemのStyle -->
+        <Style x:Key="myContainerStyle" TargetType="ListBoxItem">
+            <Style.Triggers>
+                <Trigger Property="IsSelected" Value="True">
+                    <Setter Property="Background" Value="Transparent"/>
+                </Trigger>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="Transparent"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
     </UserControl.Resources>
 
     <i:Interaction.Triggers>
@@ -27,8 +39,7 @@
     <Grid>
         <DockPanel >
             <Label DockPanel.Dock="Top" Background="{DynamicResource ThemeBrushKey}" Foreground="{DynamicResource ActiveForegroundBrushKey}" Content="{Binding Count55}" />
-        
-            <ListView ItemsSource="{Binding Path=AachievementLogList}" HorizontalAlignment="Stretch" Height="Auto">
+            <ListView ItemsSource="{Binding Path=AachievementLogList}" HorizontalAlignment="Stretch" Height="Auto" ItemContainerStyle="{StaticResource myContainerStyle}">
                 <ListView.View>
                     <GridView>
                         <GridViewColumn DisplayMemberBinding="{Binding Path=DateTime, ConverterCulture=ja-JP}" Header="日時" Width="140"/>
