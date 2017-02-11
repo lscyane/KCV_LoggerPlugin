@@ -39,8 +39,15 @@ namespace KCVLoggerPlugin.Models
 				// 戦闘結果
 				proxy.api_req_sortie_battleresult.TryParse<kcsapi_battleresult>().Subscribe(async br =>
 				{
-					this.updateBattleResult(br.Data);
-					await this.SaveAsync();
+                    try
+                    {
+                        this.updateBattleResult(br.Data);
+                        await this.SaveAsync();
+                    }
+                    catch
+                    {
+                        // TODO エラー落ち暫定対策
+                    }
 				});
 
 			}, false);
