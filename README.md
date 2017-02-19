@@ -99,6 +99,11 @@
 * **ライセンス :** Apache License Version 2.0
 * **ライセンス全文 :** [license/Apache.txt](license/Apache.txt)
 
+#### [EventMapHpViewer](https://github.com/veigr/EventMapHpViewer)
+> The MIT License (MIT)
+> Copyright (c) 2014 veigr
+* **ライセンス :** The MIT License (MIT)
+* **ライセンス全文 :** [license/EventMapHpViewer.txt](license/EventMapHpViewer.txt)
 
 
 ### LATEST BUILD 
