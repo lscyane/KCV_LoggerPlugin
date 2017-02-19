@@ -38,22 +38,55 @@
 
     <Grid>
         <DockPanel >
-            <Label DockPanel.Dock="Top" Background="{DynamicResource ThemeBrushKey}" Foreground="{DynamicResource ActiveForegroundBrushKey}" Content="{Binding Count55}" />
-            <ListView ItemsSource="{Binding Path=AachievementLogList}" HorizontalAlignment="Stretch" Height="Auto" ItemContainerStyle="{StaticResource myContainerStyle}">
-                <ListView.View>
-                    <GridView>
-                        <GridViewColumn DisplayMemberBinding="{Binding Path=DateTime, ConverterCulture=ja-JP}" Header="日時" Width="140"/>
-                        <GridViewColumn Header="提督経験値" Width="140">
-                            <GridViewColumn.DisplayMemberBinding>
-                                <MultiBinding Converter="{StaticResource IncrementalExpConverter}">
-                                    <Binding Path="AdmiralExp"/>
-                                    <Binding Path="Incremental"/>
-                                </MultiBinding>
-                            </GridViewColumn.DisplayMemberBinding>
-                        </GridViewColumn>
-                    </GridView>
-                </ListView.View>
-            </ListView>
+            <TextBlock DockPanel.Dock="Top" Background="{DynamicResource ThemeBrushKey}" Foreground="{DynamicResource ActiveForegroundBrushKey}" Margin="10,0,0,0">
+                <TextBlock.Text>
+                    <MultiBinding StringFormat="今月の5-4カウンター：{0}">
+                        <Binding Path="Count55" />
+                    </MultiBinding>
+                </TextBlock.Text>
+            </TextBlock>
+            <StackPanel Orientation="Horizontal">
+                <ListView ItemsSource="{Binding Path=AachievementLogList}" HorizontalAlignment="Stretch" Height="Auto" ItemContainerStyle="{StaticResource myContainerStyle}">
+                    <ListView.View>
+                        <GridView>
+                            <GridViewColumn DisplayMemberBinding="{Binding Path=DateTime, ConverterCulture=ja-JP}" Header="日時" Width="140"/>
+                            <GridViewColumn Header="提督経験値" Width="140">
+                                <GridViewColumn.DisplayMemberBinding>
+                                    <MultiBinding Converter="{StaticResource IncrementalExpConverter}">
+                                        <Binding Path="AdmiralExp"/>
+                                        <Binding Path="Incremental"/>
+                                    </MultiBinding>
+                                </GridViewColumn.DisplayMemberBinding>
+                            </GridViewColumn>
+                        </GridView>
+                    </ListView.View>
+                </ListView>
+                <StackPanel Orientation="Vertical">
+                    <TextBlock Foreground="White" Margin="10,0,0,0">
+                        <TextBlock.Text>
+                            <MultiBinding StringFormat="現在戦果：{0:0.00} ({1:+0.00;-0.00}) {2}">
+                                <Binding Path="NowAachievement" />
+                                <Binding Path="PrevDiffAachievement" />
+                                <Binding Path="DebugText" />
+                            </MultiBinding>
+                        </TextBlock.Text>
+                    </TextBlock>
+                    <TextBlock Foreground="White" Margin="10,0,0,0">
+                        <TextBlock.Text>
+                            <MultiBinding StringFormat="今月EO戦果：{0}">
+                                <Binding Path="ThisMonthEOAach" />
+                            </MultiBinding>
+                        </TextBlock.Text>
+                    </TextBlock>
+                    <TextBlock Foreground="White" Margin="10,0,0,0">
+                        <TextBlock.Text>
+                            <MultiBinding StringFormat="先月EO戦果：{0}">
+                                <Binding Path="LastMonthEOAach" />
+                            </MultiBinding>
+                        </TextBlock.Text>
+                    </TextBlock>
+                </StackPanel>
+            </StackPanel>
         </DockPanel>
     </Grid>
 </UserControl>

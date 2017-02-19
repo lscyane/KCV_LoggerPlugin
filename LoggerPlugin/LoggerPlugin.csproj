@@ -162,6 +162,9 @@
     <Compile Include="Annotations\ElementalAttribute.cs" />
     <Compile Include="Annotations\LightAttribute.cs" />
     <Compile Include="LoggerPlugin.cs" />
+    <Compile Include="Models\ExtraOperationLog.cs" />
+    <Compile Include="Models\ExtraOperationLogger.cs" />
+    <Compile Include="Models\ExtraOperationLogStruct.cs" />
     <Compile Include="Models\BattleLog.cs" />
     <Compile Include="Models\BattleLogger.cs" />
     <Compile Include="Models\BattleLogStruct.cs" />
@@ -182,6 +185,8 @@
     <Compile Include="Models\CreateShipLogStruct.cs" />
     <Compile Include="Models\LogBase.cs" />
     <Compile Include="Models\LoggerBase.cs" />
+    <Compile Include="Models\Raw\Api_Eventmap.cs" />
+    <Compile Include="Models\Raw\member_mapinfo.cs" />
     <Compile Include="Models\Settings.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>

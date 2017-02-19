@@ -75,13 +75,14 @@ namespace KCVLoggerPlugin.ViewModels
 		private MissionLogger mLogManager { get; set; }
 		private MaterialLogger maLogManager { get; set; }
 		private AachievementLogger aLogManager { get; set; }
+        private ExtraOperationLogger eoLogManager { get; set; }
 
 
-		/// <summary>
-		/// コンストラクタ
-		/// </summary>
-		/// <param name="plugin"></param>
-		public ToolViewModel(LoggerPlugin plugin)
+        /// <summary>
+        /// コンストラクタ
+        /// </summary>
+        /// <param name="plugin"></param>
+        public ToolViewModel(LoggerPlugin plugin)
 		{
 			this.plugin = plugin;
 			this.ciLogManager = new CreateItemLogger(plugin);
@@ -90,7 +91,8 @@ namespace KCVLoggerPlugin.ViewModels
 			this.mLogManager = new MissionLogger(plugin);
 			this.maLogManager = new MaterialLogger(plugin);
 			this.aLogManager = new AachievementLogger(plugin);
-		}
+            this.eoLogManager = new ExtraOperationLogger(plugin);
+        }
 
 
 		/// <summary>
@@ -105,9 +107,10 @@ namespace KCVLoggerPlugin.ViewModels
 			Task mlogTask;
 			Task malogTask;
 			Task alogTask;
+            Task eologTask;
 
-			#region CreateItemLogger開始
-			{
+            #region CreateItemLogger開始
+            {
 				// プロパティの変化を監視
 				CreateItemLog cilog = CreateItemLog.Instance;
 				var cilogChangedListener = new PropertyChangedEventListener(cilog)
@@ -218,15 +221,36 @@ namespace KCVLoggerPlugin.ViewModels
                         // データ非同期読み込み
                         if (!alog.HistoryWriting) {
 							this.RefleshAachievementLog();
-						}
+                            this.RefleshAachievement();
+                        }
 					}
 				};
 				// DB初回読み込み開始
 				alogTask = this.aLogManager.LoadAsync();
 			}
-			#endregion
+            #endregion
 
-			await Task.WhenAll(cilogTask, cslogTask, blogTask, mlogTask, malogTask, alogTask);
+            #region ExtraOperationLogger開始
+            {
+                // プロパティの変化を監視
+                ExtraOperationLog eolog = ExtraOperationLog.Instance;
+                var eologChangedListener = new PropertyChangedEventListener(eolog)
+                {
+                    // DB更新時の通知設定
+                    nameof(eolog.HistoryWriting), (_, __) =>
+                    {
+                        // データ非同期読み込み
+                        if (!eolog.HistoryWriting) {
+                            this.RefleshAachievement();
+                        }
+                    }
+                };
+                // DB初回読み込み開始
+                eologTask = this.eoLogManager.LoadAsync();
+            }
+            #endregion
+
+            await Task.WhenAll(cilogTask, cslogTask, blogTask, mlogTask, malogTask, alogTask, eologTask);
 		}
 
 
@@ -262,9 +286,13 @@ namespace KCVLoggerPlugin.ViewModels
 			{
 				tasks.Add(this.aLogManager.SaveAsync());
 			}
+            if (Models.ExtraOperationLog.Instance.History.Count > 0)
+            {
+                tasks.Add(this.eoLogManager.SaveAsync());
+            }
 
-			// 保存するログがある場合、完了を待機
-			if (tasks.Count > 0)
+            // 保存するログがある場合、完了を待機
+            if (tasks.Count > 0)
 			{
 				Task.WaitAll(tasks.ToArray());
 			}
@@ -318,7 +346,7 @@ namespace KCVLoggerPlugin.ViewModels
 					}
 				}
 			}
-			Count55 = "今月の5-5カウンター：" + count.ToString();
+			this.Count55 = count.ToString();
 		}
 
 
@@ -343,19 +371,103 @@ namespace KCVLoggerPlugin.ViewModels
 		}
 
 
-		/// <summary>
-		/// リストのデータをリフレッシュします。
-		/// </summary>
-		public void RefleshAachievementLog()
-		{
-			// 新しいデータを上部にするため反転して返す
-			this.AachievementLogList = new ObservableCollection<AachievementLogStruct>(AachievementLog.Instance.History.Reverse());
-			// 表示用値の計算
-			for (int i=0; i < this.AachievementLogList.Count-1; ++i)
-			{
-				this.AachievementLogList[i].Incremental = this.AachievementLogList[i].AdmiralExp - this.AachievementLogList[i+1].AdmiralExp;
-			}
-		}
+        /// <summary>
+        /// リストのデータをリフレッシュします。
+        /// </summary>
+        public void RefleshAachievementLog()
+        {
+            // データがないときは処理しない
+            if (AachievementLog.Instance.History.Count == 0)
+            {
+                return;
+            }
+
+            // 新しいデータを上部にするため反転して返す
+            this.AachievementLogList = new ObservableCollection<AachievementLogStruct>(AachievementLog.Instance.History.Reverse());
+
+            // 表示用値の計算
+            for (int i = 0; i < this.AachievementLogList.Count - 1; ++i)
+            {
+                this.AachievementLogList[i].Incremental = this.AachievementLogList[i].AdmiralExp - this.AachievementLogList[i + 1].AdmiralExp;
+            }
+        }
+
+
+        /// <summary>
+        /// リストのデータをリフレッシュします。
+        /// </summary>
+        public void RefleshAachievement()
+        {
+            int 前月EO = ExtraOperationLog.Instance.GetLastMonthEOAachievement();
+            int 今月EO = ExtraOperationLog.Instance.GetThisMonthEOAachievement();
+
+            // 現在戦果の計算
+            AachievementLogStruct baseStruct;
+            {
+                // 引き継ぎ戦果の計算基準となるデータ
+                DateTime baseDate = new DateTime(DateTime.Now.Year, 12, 31, 22, 0, 0);  // 今年末の22時
+                if (DateTime.Now < baseDate)
+                {
+                    baseDate = baseDate.AddYears(-1);   // 繰越戦果の基準日は前年末の22時
+                }
+                baseStruct = this.AachievementLogList.ToList().Find(x =>
+                {
+                    return (x.DateTime < baseDate);
+                });
+                if (baseStruct == null) // もし見つからなかったら一番古いログを使用する
+                {
+                    baseStruct = AachievementLog.Instance.History[0];
+                }
+            }
+            AachievementLogStruct pointStruct;
+            {
+                // 今月戦果の計算基準となるデータ
+                DateTime pointDate = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1, 22, 0, 0).AddMonths(1).AddDays(-1); // 今月末の22時
+                if (DateTime.Now < pointDate)
+                {
+                    pointDate = pointDate.AddDays(1).AddMonths(-1).AddDays(-1);    // 差分基準日は先月末の22時
+                }
+                else
+                {
+                    今月EO = 0;   // 経験値戦果は22時〆なのでEO戦果の計算も打ち切る
+                }
+                pointStruct = this.AachievementLogList.ToList().Find(x =>
+                {
+                    return (x.DateTime < pointDate);
+                });
+            }
+            AachievementLogStruct prevStruct;   // 前日時点の戦果
+            {
+                DateTime prevDate = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, 22, 0, 0);
+                if (DateTime.Now < prevDate)
+                {
+                    prevDate = prevDate.AddDays(-1);
+                }
+                prevStruct = this.AachievementLogList.ToList().Find(x =>
+                {
+                    return (x.DateTime < prevDate);
+                });
+            }
+
+            float 引継戦果 = ((pointStruct.AdmiralExp - baseStruct.AdmiralExp) / 50000f) + (int)(前月EO / 35f);
+            float 経験値戦果 = (this.AachievementLogList[0].AdmiralExp - pointStruct.AdmiralExp) / 1428f;
+            float 前日経験値戦果 = (prevStruct.AdmiralExp - pointStruct.AdmiralExp) / 1428f;
+            this.NowAachievement = 経験値戦果 + 引継戦果 + 今月EO;
+            this.PrevDiffAachievement = 経験値戦果 - 前日経験値戦果 + ExtraOperationLog.Instance.GetTodayMonthEOAachievement();
+            this.ThisMonthEOAach = 今月EO;
+            this.LastMonthEOAach = 前月EO;
+#if DEBUG
+            this.DebugText = "\n【Debug】"
+                + "\n  base :" + baseStruct.DateTime.ToString()
+                + "\n  point:" + pointStruct.DateTime.ToString()
+                + "\n  prev :" + prevStruct.DateTime.ToString();
+#endif
+            RaisePropertyChanged(nameof(NowAachievement));
+            RaisePropertyChanged(nameof(PrevDiffAachievement));
+            RaisePropertyChanged(nameof(ThisMonthEOAach));
+            RaisePropertyChanged(nameof(LastMonthEOAach));
+            RaisePropertyChanged(nameof(DebugText));
+        }
 
 
 		#region BindProperty
@@ -467,8 +579,12 @@ namespace KCVLoggerPlugin.ViewModels
 				RaisePropertyChanged(nameof(Count55));
 			}
 		}
-
-		#endregion
-	}
+        public float NowAachievement { get; set; }
+        public float PrevDiffAachievement { get; set; }
+        public int ThisMonthEOAach { get; set; }
+        public int LastMonthEOAach { get; set; }
+        public string DebugText { get; set; }
+        #endregion
+    }
 
 }
