@@ -106,6 +106,14 @@ namespace KCVLoggerPlugin.Models
                             this.EOClearFlag[map_id] = cleared;
                             this.EOClearDate[map_id] = DateTime.Now;
                         }
+
+                        // 補正：1-5が未クリアなら1-6も未クリアにする (月跨ぎで再ログインせずに海域画面を開かれた場合の対策)
+                        if ((map_id == 15)
+                         && (cleared == 0)
+                         && (this.EOClearFlag.ContainsKey(16))
+                        ) {
+                            this.EOClearFlag[16] = cleared;
+                        }
                     }
                     else
                     {

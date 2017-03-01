@@ -45,9 +45,10 @@ namespace KCVLoggerPlugin.Models
                 proxy.ApiSessionSource
                     .Where(s => s.Request.PathAndQuery == "/kcsapi/api_get_member/mapinfo")
                     .TryParse<Raw.mapinfo>()
-                    .Subscribe(m =>
+                    .Subscribe(async m =>
                     {
                         this.updateExtraOperation(m.Data.api_map_info);
+                        await this.SaveAsync();
                     });
 
             }, false);
