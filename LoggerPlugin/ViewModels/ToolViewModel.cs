@@ -76,6 +76,7 @@ namespace KCVLoggerPlugin.ViewModels
 		private MaterialLogger maLogManager { get; set; }
 		private AachievementLogger aLogManager { get; set; }
         private ExtraOperationLogger eoLogManager { get; set; }
+        private RankingLogger rkLogManager { set; get; }
 
 
         /// <summary>
@@ -92,6 +93,7 @@ namespace KCVLoggerPlugin.ViewModels
 			this.maLogManager = new MaterialLogger(plugin);
 			this.aLogManager = new AachievementLogger(plugin);
             this.eoLogManager = new ExtraOperationLogger(plugin);
+            this.rkLogManager = new RankingLogger(plugin);
         }
 
 
@@ -108,6 +110,7 @@ namespace KCVLoggerPlugin.ViewModels
 			Task malogTask;
 			Task alogTask;
             Task eologTask;
+            Task rklogTask;
 
             #region CreateItemLogger開始
             {
@@ -250,7 +253,27 @@ namespace KCVLoggerPlugin.ViewModels
             }
             #endregion
 
-            await Task.WhenAll(cilogTask, cslogTask, blogTask, mlogTask, malogTask, alogTask, eologTask);
+            #region RankingLogger開始
+            {
+                // プロパティの変化を監視
+                RankingLog rklog = RankingLog.Instance;
+                var rklogChangedListener = new PropertyChangedEventListener(rklog)
+                {
+                    // DB更新時の通知設定
+                    nameof(rklog.HistoryWriting), (_, __) =>
+                    {
+                        // データ非同期読み込み
+                        if (!rklog.HistoryWriting) {
+                            this.RefleshRanking();
+                        }
+                    }
+                };
+                // DB初回読み込み開始
+                rklogTask = this.rkLogManager.LoadAsync();
+            }
+            #endregion
+
+            await Task.WhenAll(cilogTask, cslogTask, blogTask, mlogTask, malogTask, alogTask, eologTask, rklogTask);
 		}
 
 
@@ -289,6 +312,10 @@ namespace KCVLoggerPlugin.ViewModels
             if (Models.ExtraOperationLog.Instance.History.Count > 0)
             {
                 tasks.Add(this.eoLogManager.SaveAsync());
+            }
+            if (Models.RankingLog.Instance.History.Count > 0)
+            {
+                tasks.Add(this.rkLogManager.SaveAsync());
             }
 
             // 保存するログがある場合、完了を待機
@@ -435,7 +462,7 @@ namespace KCVLoggerPlugin.ViewModels
                 {
                     return (x.DateTime < pointDate);
                 });
-            }
+                }
             AachievementLogStruct prevStruct;   // 前日時点の戦果
             {
                 DateTime prevDate = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, 22, 0, 0);
@@ -447,7 +474,7 @@ namespace KCVLoggerPlugin.ViewModels
                 {
                     return (x.DateTime < prevDate);
                 });
-            }
+                }
 
             float 引継戦果 = ((pointStruct.AdmiralExp - baseStruct.AdmiralExp) / 50000f) + (int)(前月EO / 35f);
             float 経験値戦果 = (this.AachievementLogList[0].AdmiralExp - pointStruct.AdmiralExp) / 1428f;
@@ -470,12 +497,89 @@ namespace KCVLoggerPlugin.ViewModels
         }
 
 
-		#region BindProperty
 
-		/// <summary>
-		/// CreateItemLogのリストビューデータ
-		/// </summary>
-		ObservableCollection<CreateItemLogStruct> _createItemLogList = new ObservableCollection<CreateItemLogStruct>();
+        #region Ranking関連
+
+        /// <summary>
+        /// リストのデータをリフレッシュします。
+        /// </summary>
+        private void RefleshRanking()
+        {
+            int a = RankingLog.Instance.History.Count;
+            List<Border> logList = new List<Border>();
+            foreach(var item in RankingLog.Instance.History)
+            {
+                if (item.DateTime > new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1, 0, 0, 0))
+                {
+                    Border border = new Border();
+                    border.Date = item.DateTime;
+                    foreach (var adm in item.Admiral)
+                    {
+                        if (adm.Value.rank == 1)
+                        {
+                            border.Achievement1 = adm.Value.戦果(item.DateTime);
+                        }
+                        else if (adm.Value.rank == 10)
+                        {
+                            border.Achievement10 = adm.Value.戦果(item.DateTime);
+                        }
+                        else if (adm.Value.rank == 100)
+                        {
+                            border.Achievement100 = adm.Value.戦果(item.DateTime);
+                        }
+                        else if (adm.Value.rank == 501)
+                        {
+                            border.Achievement501 = adm.Value.戦果(item.DateTime);
+                        }
+
+                        if (Grabacr07.KanColleWrapper.KanColleClient.Current.IsStarted)
+                        {
+                            if (adm.Key == Grabacr07.KanColleWrapper.KanColleClient.Current.Homeport.Admiral.Nickname)
+                            {
+                                border.Achievement = adm.Value.戦果(item.DateTime);
+                            }
+                        }
+                    }
+                    logList.Add(border);
+                } 
+            }
+            logList.Reverse();
+            this.RankingLogList = new ObservableCollection<Border>(logList);
+        }
+
+        ObservableCollection<Border> _rankingLogList = new ObservableCollection<Border>();
+        public ObservableCollection<Border> RankingLogList
+        {
+            get
+            {
+                return this._rankingLogList;
+            }
+            set
+            {
+                this._rankingLogList = value;
+                // バインドしているViewに変更を通知
+                RaisePropertyChanged(nameof(RankingLogList));
+            }
+        }
+
+        public class Border
+        {
+            public DateTime Date { get; set; }
+            public int Achievement1 { get; set; }
+            public int Achievement10 { get; set; }
+            public int Achievement100 { get; set; }
+            public int Achievement501 { get; set; }
+            public int Achievement { get; set; }
+        }
+        #endregion
+
+
+        #region BindProperty
+
+        /// <summary>
+        /// CreateItemLogのリストビューデータ
+        /// </summary>
+        ObservableCollection<CreateItemLogStruct> _createItemLogList = new ObservableCollection<CreateItemLogStruct>();
 		public ObservableCollection<CreateItemLogStruct> CreateItemLogList
 		{
 			get

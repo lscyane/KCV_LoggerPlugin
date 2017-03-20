@@ -165,6 +165,9 @@
     <Compile Include="Models\ExtraOperationLog.cs" />
     <Compile Include="Models\ExtraOperationLogger.cs" />
     <Compile Include="Models\ExtraOperationLogStruct.cs" />
+    <Compile Include="Models\RankingLog.cs" />
+    <Compile Include="Models\RankingLogger.cs" />
+    <Compile Include="Models\RankingLogStruct.cs" />
     <Compile Include="Models\BattleLog.cs" />
     <Compile Include="Models\BattleLogger.cs" />
     <Compile Include="Models\BattleLogStruct.cs" />
@@ -186,6 +189,7 @@
     <Compile Include="Models\LogBase.cs" />
     <Compile Include="Models\LoggerBase.cs" />
     <Compile Include="Models\Raw\Api_Eventmap.cs" />
+    <Compile Include="Models\Raw\data.cs" />
     <Compile Include="Models\Raw\member_mapinfo.cs" />
     <Compile Include="Models\Settings.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
@@ -204,6 +208,9 @@
     <Compile Include="Settings.cs" />
     <Compile Include="ViewModels\SettingViewModel.cs" />
     <Compile Include="ViewModels\ToolViewModel.cs" />
+    <Compile Include="Views\RankingLogView.xaml.cs">
+      <DependentUpon>RankingLogView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\AachievementLog.xaml.cs">
       <DependentUpon>AachievementLog.xaml</DependentUpon>
     </Compile>
@@ -245,6 +252,10 @@
     <Analyzer Include="..\packages\KanColleViewer.PluginAnalyzer.1.1.1.0\analyzers\KanColleViewer.PluginAnalyzer.dll" />
   </ItemGroup>
   <ItemGroup>
+    <Page Include="Views\RankingLogView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="Views\AachievementLog.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -280,8 +291,12 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>
-    </PostBuildEvent>
+    <PostBuildEvent>copy "$(TargetDir)$(TargetFileName)" "$(SolutionDir)KanColleViewer ver.4.2\Plugins"
+copy "$(TargetDir)protobuf-net.dll" "$(SolutionDir)KanColleViewer ver.4.2\Plugins"
+copy "$(TargetDir)Xceed.Wpf.Toolkit.dll" "$(SolutionDir)KanColleViewer ver.4.2\Plugins"
+copy "$(TargetDir)$(TargetFileName)" "\\192.168.1.2\public\plugin"
+copy "$(TargetDir)protobuf-net.dll" "\\192.168.1.2\public\plugin"
+copy "$(TargetDir)Xceed.Wpf.Toolkit.dll" "\\192.168.1.2\public\plugin"</PostBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
     <PreBuildEvent>
