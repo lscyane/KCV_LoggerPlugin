@@ -53,6 +53,9 @@
             <TabItem Header="戦果記録">
                 <v:AachievementLogView/>
             </TabItem>
+            <TabItem Header="ランキング">
+                <v:RankingLogView/>
+            </TabItem>
         </TabControl>
     </Grid>
 </UserControl>
