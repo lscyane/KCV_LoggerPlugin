@@ -251,7 +251,7 @@ namespace KCVLoggerPlugin.ViewModels
             #endregion
 
             await Task.WhenAll(cilogTask, cslogTask, blogTask, mlogTask, malogTask, alogTask, eologTask);
-		}
+                        }
 
 
 		/// <summary>
@@ -398,6 +398,12 @@ namespace KCVLoggerPlugin.ViewModels
         /// </summary>
         public void RefleshAachievement()
         {
+            // データがないときは処理しない
+            if (AachievementLog.Instance.History.Count == 0)
+            {
+                return;
+            }
+
             int 前月EO = ExtraOperationLog.Instance.GetLastMonthEOAachievement();
             int 今月EO = ExtraOperationLog.Instance.GetThisMonthEOAachievement();
 
@@ -435,6 +441,10 @@ namespace KCVLoggerPlugin.ViewModels
                 {
                     return (x.DateTime < pointDate);
                 });
+                if (pointStruct == null) // もし見つからなかったら一番古いログを使用する
+                {
+                    pointStruct = this.AachievementLogList.Last();
+                }
             }
             AachievementLogStruct prevStruct;   // 前日時点の戦果
             {
@@ -447,6 +457,10 @@ namespace KCVLoggerPlugin.ViewModels
                 {
                     return (x.DateTime < prevDate);
                 });
+                if (prevStruct == null) // もし見つからなかったら一番古いログを使用する
+                {
+                    prevStruct = this.AachievementLogList.Last();
+                }
             }
 
             float 引継戦果 = ((pointStruct.AdmiralExp - baseStruct.AdmiralExp) / 50000f) + (int)(前月EO / 35f);
@@ -470,12 +484,12 @@ namespace KCVLoggerPlugin.ViewModels
         }
 
 
-		#region BindProperty
+        #region BindProperty
 
-		/// <summary>
-		/// CreateItemLogのリストビューデータ
-		/// </summary>
-		ObservableCollection<CreateItemLogStruct> _createItemLogList = new ObservableCollection<CreateItemLogStruct>();
+        /// <summary>
+        /// CreateItemLogのリストビューデータ
+        /// </summary>
+        ObservableCollection<CreateItemLogStruct> _createItemLogList = new ObservableCollection<CreateItemLogStruct>();
 		public ObservableCollection<CreateItemLogStruct> CreateItemLogList
 		{
 			get
