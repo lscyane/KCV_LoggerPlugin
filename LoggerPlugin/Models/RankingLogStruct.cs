@@ -101,6 +101,49 @@ namespace KCVLoggerPlugin.Models
 
 
 
+        public class ConstADef
+        {
+            public DateTime date { get; set; }
+            public int val { get; set; }
+        }
+        const string tableFileName = "AchieConstTable.xml";
+        static List<ConstADef> table = new List<ConstADef>();
+        static RankData()
+        {
+            bool isSuccess = false;
+
+            try
+            {
+                if (System.IO.File.Exists(tableFileName))
+                {
+                    // ファイルが合ったら読み込む
+                    var serializer = new System.Xml.Serialization.XmlSerializer(table.GetType());
+                    var sr = new System.IO.StreamReader(tableFileName, new System.Text.UTF8Encoding(false));
+                    table = (List<ConstADef>)serializer.Deserialize(sr);
+                    sr.Close();
+                    isSuccess = true;
+                }
+            }
+            catch
+            {
+                isSuccess = false;
+            }
+
+            if (!isSuccess)
+            {
+                // 無かったら適当に作る
+                table.Add(new ConstADef { date = new DateTime(2017, 2, 28, 12, 0, 0), val = 91 });
+                table.Add(new ConstADef { date = new DateTime(2017, 3, 17, 12, 0, 0), val = 25 });
+                table.Add(new ConstADef { date = new DateTime(2017, 4, 5, 12, 0, 0), val = 63 });
+                table.Add(new ConstADef { date = new DateTime(2099, 12, 31, 12, 0, 0), val = 26 });
+
+                var serializer = new System.Xml.Serialization.XmlSerializer(table.GetType());
+                var sw = new System.IO.StreamWriter(tableFileName, false, new System.Text.UTF8Encoding(false));
+                serializer.Serialize(sw, table);
+                sw.Close();
+            }
+        }
+
 
         public int 勲章数(DateTime date)
         {
@@ -120,12 +163,8 @@ namespace KCVLoggerPlugin.Models
             /// <remarks>
             ///     戦果 = api_wuhnhojjxmke / (係数*a) - 91
             /// </remarks>
-            
-            int a; // a はメンテごとに変わることが多い
-            if (date < new DateTime(2017, 2, 28, 18, 0, 0)) { a = 91; }
-            else { a = 25; }    // 柱島は92
 
-            return (int)(apiVal / (戦果係数(rank) * a)) - 91;
+            return (int)(apiVal / (戦果係数(rank) * getConstA(date))) - 91;
         }
 
 
@@ -170,6 +209,34 @@ namespace KCVLoggerPlugin.Models
                 6586,
             };
             return table[rank % 13];
+        }
+
+
+        private int getConstA(DateTime date)
+        {
+            int a = 1; // a はメンテごとに変わることが多い
+
+            foreach (var pair in table)
+            {
+                if (date < pair.date)
+                {
+                    a = pair.val;
+                    break;
+                }
+            }
+            /*
+            if (date < new DateTime(2017, 2, 28, 15, 0, 0)) { a = 91; }
+            else if (date < new DateTime(2017, 3, 17, 15, 0, 0)) { a = 25; }
+            else if (date < new DateTime(2017, 4, 5, 15, 0, 0)) { a = 63; }
+            else { a = 26; }
+            */
+            return a;
+        }
+
+        public static int EditConstA
+        {
+            get { return table.Last().val; }
+            set { table.Last().val = value; }
         }
     }
 }

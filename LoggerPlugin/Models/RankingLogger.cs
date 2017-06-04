@@ -92,7 +92,7 @@ namespace KCVLoggerPlugin.Models
             foreach(var dat in logInstance.History.Last().Admiral)
             {
                 //System.Diagnostics.Debug.WriteLine("[" + dat.Value.rank.ToString() + "] " + dat.Key + " : " + dat.Value.戦果() + "(" + dat.Value.勲章数() + ")");
-                System.Diagnostics.Debug.WriteLine(dat.Value.rank.ToString() + "\t" + dat.Value.achievement);
+                System.Diagnostics.Debug.WriteLine(dat.Value.rank.ToString() + "\t" + dat.Value.achievement + "\t" + dat.Value.戦果(DateTime.Today) );
             }
         }
     }

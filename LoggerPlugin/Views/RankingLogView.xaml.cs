@@ -25,11 +25,37 @@ namespace KCVLoggerPlugin.Views
     /// <summary>
     /// AachievementLog.xaml の相互作用ロジック
     /// </summary>
-    public partial class RankingLogView : UserControl
+    public partial class RankingLogView : UserControl, System.ComponentModel.INotifyPropertyChanged
     {
+        public Visibility OptionVisible { get; set; }
+
         public RankingLogView()
         {
             InitializeComponent();
+            this.OptionVisible = Visibility.Collapsed;
+        }
+
+        private void TextBox_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Return)
+            {
+                var vm = this.DataContext as ViewModels.ToolViewModel;
+                if (vm != null)
+                {
+                    vm.RefleshRanking();
+                }
+            }
+        }
+
+        public event System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
+
+        private void UserControl_KeyDown(object sender, KeyEventArgs e)
+        {
+            if ((e.SystemKey == Key.LeftAlt) || (e.SystemKey == Key.RightAlt))
+            {
+                this.OptionVisible = (this.OptionVisible == Visibility.Visible ? Visibility.Collapsed : Visibility.Visible);
+                PropertyChanged(this, new System.ComponentModel.PropertyChangedEventArgs("OptionVisible"));
+            }
         }
     }
 }

@@ -503,7 +503,7 @@ namespace KCVLoggerPlugin.ViewModels
         /// <summary>
         /// リストのデータをリフレッシュします。
         /// </summary>
-        private void RefleshRanking()
+        public void RefleshRanking()
         {
             int a = RankingLog.Instance.History.Count;
             List<Border> logList = new List<Border>();
@@ -668,6 +668,19 @@ namespace KCVLoggerPlugin.ViewModels
 				RaisePropertyChanged(nameof(AachievementLogList));
 			}
 		}
+
+
+        public int EditConstA
+        {
+            get
+            {
+                return RankData.EditConstA;
+            }
+            set
+            {
+                RankData.EditConstA = value;
+            }
+        }
 
 
 		private String _count55 = "";
