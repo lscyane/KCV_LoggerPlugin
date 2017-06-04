@@ -46,10 +46,24 @@ namespace KCVLoggerPlugin.Models
                     .Where(s => s.Request.PathAndQuery == "/kcsapi/api_get_member/mapinfo")
                     .TryParse<Raw.mapinfo>()
                     .Subscribe(async m =>
-                    {
-                        this.updateExtraOperation(m.Data.api_map_info);
-                        await this.SaveAsync();
-                    });
+                {
+                    this.updateExtraOperation(m.Data.api_map_info);
+                    await this.SaveAsync();
+                });
+
+                // 任務達成時
+                proxy.ApiSessionSource
+                   .Where(s => s.Request.PathAndQuery == "/kcsapi/api_req_quest/clearitemget")
+                   .TryParse<Raw.kcsapi_bounus>()
+                   .Subscribe(async mi =>
+                {
+                    string[] quest_id = mi.Request.GetValues("api_quest_id");
+                    if (quest_id != null)
+                    { 
+                        this.updateMission(int.Parse(quest_id[0]));
+                    }
+                    await this.SaveAsync();
+                });
 
             }, false);
         }
@@ -81,8 +95,25 @@ namespace KCVLoggerPlugin.Models
             logInstance.HistoryWriting = true;
             foreach (var info in result)
             {
-                currentLog.Update(info.api_id, info.api_cleared);
+                currentLog.UpdateEO(info.api_id, info.api_cleared);
             }
+            logInstance.HistoryWriting = false;
+        }
+
+        private void updateMission(int questId)
+        {
+            ExtraOperationLog logInstance = ExtraOperationLog.Instance;
+            ExtraOperationLogStruct currentLog = logInstance.History.Last();    // 今月分を取得
+
+            // 月末22時～月初5時までは無効
+            if (((DateTime.Now.Date == DateTime.Now.AddMonths(1).AddDays(-1)) && (DateTime.Now.Hour >= 22))
+             || ((DateTime.Now.Date.Day == 1) && (DateTime.Now.Hour < 5))
+            ) {
+                return;
+            }
+
+            logInstance.HistoryWriting = true;
+            currentLog.UpdateQuest(questId, 1);
             logInstance.HistoryWriting = false;
         }
     }

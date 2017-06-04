@@ -34,6 +34,18 @@ namespace KCVLoggerPlugin.Models
         [ProtoMember(4)]
         public Dictionary<int, DateTime> EOClearDate { set; get; }
 
+        /// <summary>
+        /// 任務達成状況
+        /// </summary>
+        [ProtoMember(5)]
+        public Dictionary<int, int> QuestClearFlag { set; get; }
+
+        /// <summary>
+        /// 任務達成日
+        /// </summary>
+        [ProtoMember(6)]
+        public Dictionary<int, DateTime> QuestClearDate { set; get; }
+
 
         /// <summary>
         /// コンストラクタ
@@ -45,6 +57,8 @@ namespace KCVLoggerPlugin.Models
         {
             this.EOClearFlag = new Dictionary<int, int>();
             this.EOClearDate = new Dictionary<int, DateTime>();
+            this.QuestClearFlag = new Dictionary<int, int>();
+            this.QuestClearDate = new Dictionary<int, DateTime>();
         }
 
 
@@ -56,6 +70,8 @@ namespace KCVLoggerPlugin.Models
             this.DateTime = dateTime;
             this.EOClearFlag = new Dictionary<int, int>();
             this.EOClearDate = new Dictionary<int, DateTime>();
+            this.QuestClearFlag = new Dictionary<int, int>();
+            this.QuestClearDate = new Dictionary<int, DateTime>();
             this.CsvFlag = isCsv;
         }
 
@@ -87,7 +103,7 @@ namespace KCVLoggerPlugin.Models
         /// </summary>
         /// <param name="map_id"></param>
         /// <param name="value"></param>
-        public void Update(int map_id, int cleared)
+        public void UpdateEO(int map_id, int cleared)
         {
             switch (map_id)
             {
@@ -130,6 +146,35 @@ namespace KCVLoggerPlugin.Models
         }
 
 
+        public void UpdateQuest(int quest_id, int cleared)
+        {
+            switch (quest_id)
+            {
+                case 854:   // Z作戦
+                    if (this.QuestClearFlag.ContainsKey(quest_id))
+                    {
+                        // Update
+                        if (this.QuestClearFlag[quest_id] != cleared)
+                        {
+                            this.QuestClearFlag[quest_id] = cleared;
+                            this.QuestClearDate[quest_id] = new DateTime(2017,5,31,1,45,0);
+                        }
+                    }
+                    else
+                    {
+                        // 初回Update、キーの追加
+                        this.QuestClearFlag.Add(quest_id, cleared);
+                        this.QuestClearDate.Add(quest_id, DateTime.MinValue);
+                        if (cleared != 0)
+                        {
+                            this.QuestClearDate[quest_id] = new DateTime(2017, 5, 31, 1, 45, 0);
+                        }
+                    }
+                    break;
+            }
+        }
+
+
         /// <summary>
         /// 戦果の合計値を返します
         /// </summary>
@@ -153,12 +198,24 @@ namespace KCVLoggerPlugin.Models
                     }
                 }
             }
+
+            foreach (var quest in this.QuestClearFlag)
+            {
+                if (quest.Value != 0)
+                {
+                    switch (quest.Key)
+                    {
+                        case 854: retval += 350; break;
+                    }
+                }
+            }
+
             return retval;
         }
 
 
         /// <summary>
-        /// 当日攻略EOの戦果合計を返します
+        /// 当日(前日22時から当日22時まで)攻略EOの戦果合計を返します
         /// </summary>
         /// <returns></returns>
         public int GetAachievementSumToday()
@@ -188,6 +245,25 @@ namespace KCVLoggerPlugin.Models
                     }
                 }
             }
+
+            foreach (var quest in this.QuestClearFlag)
+            {
+                DateTime baseTime = new DateTime(now.Year, now.Month, now.Day, 22, 0, 0);
+                if (DateTime.Now.Hour < 22)
+                {
+                    baseTime = baseTime.AddDays(-1);
+                }
+                if ((quest.Value != 0)
+                 && (this.EOClearDate.ContainsKey(quest.Key))
+                 && (this.EOClearDate[quest.Key] > baseTime))
+                {
+                    switch (quest.Key)
+                    {
+                        case 854: retval += 350; break;
+                    }
+                }
+            }
+
             return retval;
         }
     }

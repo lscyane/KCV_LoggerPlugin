@@ -186,6 +186,7 @@
     <Compile Include="Models\LogBase.cs" />
     <Compile Include="Models\LoggerBase.cs" />
     <Compile Include="Models\Raw\Api_Eventmap.cs" />
+    <Compile Include="Models\Raw\kcsapi_bounus.cs" />
     <Compile Include="Models\Raw\member_mapinfo.cs" />
     <Compile Include="Models\Settings.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
