@@ -9,6 +9,7 @@
     * `LoggerPlugin.dll`
 
 * 以下のファイルを 'KanColleViewer.exe' 同じ階層に配置。
+    * `CsvHelper.dll`
     * `protobuf-net.dll`
     * `Xceed.Wpf.Toolkit.dll`
 
